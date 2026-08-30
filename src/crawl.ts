@@ -1,5 +1,4 @@
 import { JSDOM } from "jsdom";
-import { resourceLimits } from "node:worker_threads";
 
 export function normalizeURL(url: string): string | undefined {
   try {
