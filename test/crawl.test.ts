@@ -11,7 +11,7 @@ describe("normalizeURL tests", () => {
     ["https://www.boot.dev/blog/path/?ref=1", expectedURL],
     ["https://www.boot.dev/blog/path/index.html", expectedURL + "/index.html"],
     ["terefere", undefined],
-  ])("normalizeURL(%s) -> %s", ([a, expected]) => {
+  ] as [string, string | undefined][])("normalizeURL(%i) -> %i", ([a, expected]) => {
     expect(normalizeURL(a)).toBe(expected);
   });
 });
