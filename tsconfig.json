@@ -3,7 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "ignoreDeprecations": "6.0",
     "types": ["vitest/globals"]
   },
