@@ -62,9 +62,9 @@ function extractLinksFromHTMLElement(
   const urls = [];
 
   for (let e of document.querySelectorAll(element)) {
-    const l = e.getAttribute(linkAttribute);
-    if (l) {
-      urls.push(new URL(l, baseURL).toString());
+    const link = e.getAttribute(linkAttribute);
+    if (link) {
+      urls.push(new URL(link, baseURL).toString());
     } else {
       continue;
     }
