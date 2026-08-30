@@ -1,0 +1,26 @@
+{
+  "name": "typescript-web-crawler",
+  "version": "1.0.0",
+  "description": "Bootdev course: Build a Web Scrapper",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luiki-dev/typescript-web-crawler.git"
+  },
+  "author": "Luiki",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luiki-dev/typescript-web-crawler/issues"
+  },
+  "homepage": "https://github.com/luiki-dev/typescript-web-crawler#readme",
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
