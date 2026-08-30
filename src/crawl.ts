@@ -14,12 +14,12 @@ export function normalizeURL(url: string): string | undefined {
 }
 
 export function getHeadingFromHTML(html: string): string {
-  const dom = new JSDOM(html);
+  const { document } = new JSDOM(html).window;
   let result = "";
 
-  const h1s = dom.window.document.querySelectorAll("h1");
+  const h1s = document.querySelectorAll("h1");
   if (h1s.length == 0) {
-    const h2s = dom.window.document.querySelectorAll("h2");
+    const h2s = document.querySelectorAll("h2");
     if (h2s.length == 0) {
       result = "";
     } else {
@@ -30,4 +30,24 @@ export function getHeadingFromHTML(html: string): string {
   }
 
   return result;
+}
+
+export function getFirstParagraphFromHTML(html: string): string {
+  const { document } = new JSDOM(html).window;
+
+  const main = document.querySelector("main");
+  if (main) {
+    return getFirstParagraph(main);
+  } else {
+    return getFirstParagraph(document);
+  }
+}
+
+function getFirstParagraph(element: ParentNode): string {
+  const firstP = element.querySelector("p");
+  if (firstP) {
+    return firstP.textContent;
+  } else {
+    return "";
+  }
 }

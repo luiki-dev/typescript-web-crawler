@@ -1,4 +1,8 @@
-import { getHeadingFromHTML, normalizeURL } from "../src/crawl";
+import {
+  getFirstParagraphFromHTML,
+  getHeadingFromHTML,
+  normalizeURL,
+} from "../src/crawl";
 
 describe("normalizeURL tests", () => {
   const expectedURL = "www.boot.dev/blog/path";
@@ -11,9 +15,12 @@ describe("normalizeURL tests", () => {
     ["https://www.boot.dev/blog/path/?ref=1", expectedURL],
     ["https://www.boot.dev/blog/path/index.html", expectedURL + "/index.html"],
     ["terefere", undefined],
-  ] as [string, string | undefined][])("normalizeURL(%i) -> %i", ([a, expected]) => {
-    expect(normalizeURL(a)).toBe(expected);
-  });
+  ] as [string, string | undefined][])(
+    "normalizeURL(%i) -> %i",
+    ([a, expected]) => {
+      expect(normalizeURL(a)).toBe(expected);
+    },
+  );
 });
 
 describe("getHeadingFrom tests", () => {
@@ -37,5 +44,44 @@ describe("getHeadingFrom tests", () => {
     const expected = "";
     const actual = getHeadingFromHTML(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe("getFirstParagraphFromHTML tests", () => {
+  test("getFirstParagraphFromHTML find first p in main", () => {
+    const inputBody = `
+    <html><body>
+      <p>Outside paragraph.</p>
+      <main>
+        <p>Main paragraph.</p>
+      </main>
+    </body></html>
+  `;
+    const expected = "Main paragraph.";
+    const actual = getFirstParagraphFromHTML(inputBody);
+    expect(actual).toEqual(expected);
+  });
+
+  test("getFirstParagraphFromHTML find first p when no main", () => {
+    const inputBody = `
+    <html><body>
+      <p>Outside paragraph.</p>
+      <p>Main paragraph.</p>
+    </body></html>
+  `;
+    const expected = "Outside paragraph.";
+    const actual = getFirstParagraphFromHTML(inputBody);
+    expect(actual).toEqual(expected);
+  });
+
+  test("getFirstParagraphFromHTML no p found", () => {
+    const inputBody = `
+    <html><body>
+      <h1>Just title/h1>
+    </body></html>
+  `;
+    const expected = "";
+    const actual = getFirstParagraphFromHTML(inputBody);
+    expect(actual).toEqual(expected);
   });
 });
