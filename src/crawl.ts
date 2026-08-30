@@ -51,3 +51,32 @@ function getFirstParagraph(element: ParentNode): string {
     return "";
   }
 }
+
+function extractLinksFromHTMLElement(
+  html: string,
+  element: string,
+  linkAttribute: string,
+  baseURL: string,
+): string[] {
+  const { document } = new JSDOM(html).window;
+  const urls = [];
+
+  for (let e of document.querySelectorAll(element)) {
+    const l = e.getAttribute(linkAttribute);
+    if (l) {
+      urls.push(new URL(l, baseURL).toString());
+    } else {
+      continue;
+    }
+  }
+
+  return urls;
+}
+
+export function getURLsFromHTML(html: string, baseURL: string): string[] {
+  return extractLinksFromHTMLElement(html, "a", "href", baseURL);
+}
+
+export function getImagesFromHTML(html: string, baseURL: string): string[] {
+  return extractLinksFromHTMLElement(html, "img", "src", baseURL);
+}
