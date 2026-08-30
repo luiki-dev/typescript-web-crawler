@@ -4,8 +4,9 @@
     "module": "esnext",
     "strict": true,
     "moduleResolution": "Node",
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "types": ["vitest/globals"]
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "./test/**/*.ts"],
   "exclude": ["node_modules"]
 }
