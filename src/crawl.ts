@@ -1,11 +1,11 @@
 import { JSDOM } from "jsdom";
 
 export function normalizeURL(url: string): string {
-    const parsed = new URL(url);
-    const path = parsed.pathname.endsWith("/")
-      ? parsed.pathname.slice(0, -1)
-      : parsed.pathname;
-    return `${parsed.host}${path}`;
+  const parsed = new URL(url);
+  const path = parsed.pathname.endsWith("/")
+    ? parsed.pathname.slice(0, -1)
+    : parsed.pathname;
+  return `${parsed.host}${path}`;
 }
 
 export function getHeadingFromHTML(html: string): string {
@@ -74,4 +74,25 @@ export function getURLsFromHTML(html: string, baseURL: string): string[] {
 
 export function getImagesFromHTML(html: string, baseURL: string): string[] {
   return extractLinksFromHTMLElement(html, "img", "src", baseURL);
+}
+
+export type ExtractedPageData = {
+  url: string;
+  heading: string;
+  firstParagraph: string;
+  outgoingLinks: string[];
+  imageURLs: string[];
+};
+
+export function extractPageData(
+  html: string,
+  pageURL: string,
+): ExtractedPageData {
+  return {
+    url: pageURL,
+    heading: getHeadingFromHTML(html),
+    firstParagraph: getFirstParagraphFromHTML(html),
+    outgoingLinks: getURLsFromHTML(html, pageURL),
+    imageURLs: getImagesFromHTML(html, pageURL),
+  };
 }

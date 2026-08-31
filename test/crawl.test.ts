@@ -185,3 +185,124 @@ describe("getImagesFromHTML test", () => {
     expect(() => getImagesFromHTML(inputBody, inputURL)).toThrow();
   });
 });
+
+describe("extractPageData tests", () => {
+  test("extractPageData basic", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <h1>Test Title</h1>
+      <p>This is the first paragraph.</p>
+      <a href="/link1">Link 1</a>
+      <img src="/image1.jpg" alt="Image 1">
+    </body></html>
+  `;
+
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Test Title",
+      firstParagraph: "This is the first paragraph.",
+      outgoingLinks: ["https://crawler-test.com/link1"],
+      imageURLs: ["https://crawler-test.com/image1.jpg"],
+    };
+    const actual = extractPageData(inputBody, inputURL);
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("extractPageData no img, full href", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <h1>Test Title</h1>
+      <p>This is the first paragraph.</p>
+      <a href="https://crawler-test.com/link1">Link 1</a>
+    </body></html>
+  `;
+
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Test Title",
+      firstParagraph: "This is the first paragraph.",
+      outgoingLinks: ["https://crawler-test.com/link1"],
+      imageURLs: [],
+    };
+    const actual = extractPageData(inputBody, inputURL);
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("extractPageData no h1, two p, no a", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <h2>Secondary Title</h2>
+      <p>This is the first paragraph.</p>
+      <p>This is the second paragraph.</p>
+      <img src="/image1.jpg" alt="Image 1">
+    </body></html>
+  `;
+
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Secondary Title",
+      firstParagraph: "This is the first paragraph.",
+      outgoingLinks: [],
+      imageURLs: ["https://crawler-test.com/image1.jpg"],
+    };
+    const actual = extractPageData(inputBody, inputURL);
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("extractPageData p outside of main", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <p>This is the first paragraph.</p>
+      <main>
+        <h1>Test Title</h1>
+        <p>This is the expected paragraph.</p>
+        <a href="/link1">Link 1</a>
+        <img src="/image1.jpg" alt="Image 1">
+      </main>
+    </body></html>
+  `;
+
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Test Title",
+      firstParagraph: "This is the expected paragraph.",
+      outgoingLinks: ["https://crawler-test.com/link1"],
+      imageURLs: ["https://crawler-test.com/image1.jpg"],
+    };
+    const actual = extractPageData(inputBody, inputURL);
+
+    expect(actual).toEqual(expected);
+  });
+
+  test("extractPageData throws exception", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <p>This is the first paragraph.</p>
+      <main>
+        <h1>Test Title</h1>
+        <p>This is the expected paragraph.</p>
+        <a href="\\\\">Link 1</a>
+        <img src="/image1.jpg" alt="Image 1">
+      </main>
+    </body></html>
+  `;
+
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Test Title",
+      firstParagraph: "This is the expected paragraph.",
+      outgoingLinks: ["https://crawler-test.com/link1"],
+      imageURLs: ["https://crawler-test.com/image1.jpg"],
+    };
+
+    expect(() => extractPageData(inputBody, inputURL)).toThrow();
+  });
+});
