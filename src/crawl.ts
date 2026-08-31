@@ -96,3 +96,4 @@ export function extractPageData(
     imageURLs: getImagesFromHTML(html, pageURL),
   };
 }
+
