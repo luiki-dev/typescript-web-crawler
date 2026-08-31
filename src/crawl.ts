@@ -118,10 +118,47 @@ export async function getHTML(url: string) {
       return;
     }
 
-    console.log(`Successfully fetched HTML from ${url}`);
     return response.text();
   } catch (error) {
     console.error(`Error while fetching from: ${url}: ${error}`);
     return;
   }
+}
+
+export async function crawlPage(
+  baseURL: string,
+  currentURL: string,
+  pages: Record<string, number> = {},
+) {
+  const baseURLNormalized = normalizeURL(baseURL);
+  const currentURLNormalized = normalizeURL(currentURL);
+
+  // check domain for current URL
+  // return if differebt than the base URL
+  if (!currentURLNormalized.startsWith(baseURLNormalized)) {
+    return pages;
+  }
+
+  if (currentURLNormalized in pages) {
+    pages[currentURLNormalized] += 1;
+    return pages;
+  } else {
+    pages[currentURLNormalized] = 1;
+  }
+
+  console.log(`Fetching from: ${currentURL}`);
+
+  const html = await getHTML(currentURL);
+  if (!html) {
+    console.error(`!!! Couldn't fetch HTML from: ${currentURL}`);
+    return pages;
+  }
+  const urls = getURLsFromHTML(html, baseURL);
+
+  // recursivelly fetch each URL found
+  for (let url of urls) {
+    pages = await crawlPage(baseURL, url, pages);
+  }
+
+  return pages;
 }

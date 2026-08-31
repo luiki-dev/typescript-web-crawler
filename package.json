@@ -7,7 +7,7 @@
   "scripts": {
     "start": "tsx ./src/index.ts",
     "test": "vitest run",
-    "debug": "tsx ./src/index.ts https://learnwebscraping.dev/practice/ecommerce/products/ashenfang-longsword-fan-1001/"
+    "debug": "tsx ./src/index.ts https://learnwebscraping.dev/practice/ecommerce/"
   },
   "repository": {
     "type": "git",

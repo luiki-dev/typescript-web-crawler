@@ -1,5 +1,5 @@
 import { argv, exit } from "process";
-import { getHTML } from "./crawl";
+import { crawlPage } from "./crawl";
 
 async function main() {
   const args: string[] = argv.slice(2);
@@ -16,10 +16,16 @@ async function main() {
 
   const baseURL = args[0];
   console.log(`Base URL to be processed: ${baseURL}`);
+  console.log("=============================");
 
-  const html = await getHTML(baseURL);
+  const crawledPages: Record<string, number> = await crawlPage(
+    baseURL,
+    baseURL,
+  );
 
-  console.log(html);
+  console.log("=============================");
+  console.log("Crawled pages:");
+  console.log(crawledPages);
 
   exit(0);
 }
