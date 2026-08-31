@@ -1,4 +1,5 @@
 import {
+  extractPageData,
   getFirstParagraphFromHTML,
   getHeadingFromHTML,
   getImagesFromHTML,
@@ -17,7 +18,7 @@ describe("normalizeURL tests", () => {
     ["https://www.boot.dev/blog/path/?ref=1", expectedURL],
     ["https://www.boot.dev/blog/path/index.html", expectedURL + "/index.html"],
   ])("normalizeURL(%i) -> %i", ([a, expected]) => {
-      expect(normalizeURL(a)).toBe(expected);
+    expect(normalizeURL(a)).toBe(expected);
   });
 
   test("normalizeURL throws exception", () => {
@@ -121,6 +122,14 @@ describe("getURLsFromHTML test", () => {
 
     expect(actual).toEqual(expected);
   });
+
+  test("getURLsFromHTML throws exceptiom", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `<html><body><a href="\\\\\"><span>Boot.dev</span></a></body></html>`;
+    const expected = ["https://crawler-test.com/path/one"];
+
+    expect(() => getURLsFromHTML(inputBody, inputURL)).toThrow();
+  });
 });
 
 describe("getImagesFromHTML test", () => {
@@ -165,5 +174,14 @@ describe("getImagesFromHTML test", () => {
     const expected: string[] = [];
 
     expect(actual).toEqual(expected);
+  });
+
+  test("getImagesFromHTML throws exception", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `<html><body><img src="\\\\" alt="Logo"></body></html>`;
+
+    const expected = ["https://crawler-test.com/logo.png"];
+
+    expect(() => getImagesFromHTML(inputBody, inputURL)).toThrow();
   });
 });
