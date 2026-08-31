@@ -1,6 +1,7 @@
 import { argv, exit } from "process";
+import { getHTML } from "./crawl";
 
-function main() {
+async function main() {
   const args: string[] = argv.slice(2);
 
   if (args.length < 1) {
@@ -15,6 +16,10 @@ function main() {
 
   const baseURL = args[0];
   console.log(`Base URL to be processed: ${baseURL}`);
+
+  const html = await getHTML(baseURL);
+
+  console.log(html);
 
   exit(0);
 }

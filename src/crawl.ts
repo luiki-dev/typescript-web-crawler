@@ -97,3 +97,31 @@ export function extractPageData(
   };
 }
 
+export async function getHTML(url: string) {
+  try {
+    const response: Response = await fetch(url, {
+      headers: {
+        "User-Agent": "BootCrawler/1.0",
+        Accept: "text/html",
+      },
+    });
+
+    if (response.status > 400) {
+      console.error(
+        `Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`,
+      );
+      return;
+    }
+
+    if (!response.headers.get("content-type")?.includes("text/html")) {
+      console.error(`Response from ${url} is not HTML!`);
+      return;
+    }
+
+    console.log(`Successfully fetched HTML from ${url}`);
+    return response.text();
+  } catch (error) {
+    console.error(`Error while fetching from: ${url}: ${error}`);
+    return;
+  }
+}
