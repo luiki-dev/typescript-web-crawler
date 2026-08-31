@@ -16,13 +16,13 @@ describe("normalizeURL tests", () => {
     ["http://www.boot.dev/blog/path", expectedURL],
     ["https://www.boot.dev/blog/path/?ref=1", expectedURL],
     ["https://www.boot.dev/blog/path/index.html", expectedURL + "/index.html"],
-    ["terefere", undefined],
-  ] as [string, string | undefined][])(
-    "normalizeURL(%i) -> %i",
-    ([a, expected]) => {
+  ])("normalizeURL(%i) -> %i", ([a, expected]) => {
       expect(normalizeURL(a)).toBe(expected);
-    },
-  );
+  });
+
+  test("normalizeURL throws exception", () => {
+    expect(() => normalizeURL("terefere")).toThrow();
+  });
 });
 
 describe("getHeadingFrom tests", () => {
