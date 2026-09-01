@@ -1,5 +1,7 @@
 import { argv, exit } from "process";
-import { crawlPage } from "./crawl";
+import { ConcurrentCrawler } from "./crawl";
+
+const MAX_CONCURRENCY = 3;
 
 async function main() {
   const args: string[] = argv.slice(2);
@@ -18,16 +20,21 @@ async function main() {
   console.log(`Base URL to be processed: ${baseURL}`);
   console.log("=============================");
 
-  const crawledPages: Record<string, number> = await crawlPage(
-    baseURL,
-    baseURL,
-  );
+  const crawledPages: Record<string, number> = await crawlSiteAsync(baseURL);
 
   console.log("=============================");
   console.log("Crawled pages:");
   console.log(crawledPages);
 
   exit(0);
+}
+
+async function crawlSiteAsync(baseURL: string) {
+  const crawler: ConcurrentCrawler = new ConcurrentCrawler(
+    baseURL,
+    MAX_CONCURRENCY,
+  );
+  return await crawler.crawl();
 }
 
 main();

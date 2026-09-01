@@ -1,4 +1,5 @@
 import { JSDOM } from "jsdom";
+import pLimit from "p-limit";
 
 export function normalizeURL(url: string): string {
   const parsed = new URL(url);
@@ -97,68 +98,90 @@ export function extractPageData(
   };
 }
 
-export async function getHTML(url: string) {
-  try {
-    const response: Response = await fetch(url, {
-      headers: {
-        "User-Agent": "BootCrawler/1.0",
-        Accept: "text/html",
-      },
+export class ConcurrentCrawler {
+  baseURL: string;
+  pages: Record<string, number>;
+  limit: any;
+
+  constructor(baseURL: string, maxConcurrency: number) {
+    this.baseURL = baseURL;
+    this.pages = {};
+    this.limit = pLimit(maxConcurrency);
+  }
+
+  private addPageVisit(normalizedURL: string): boolean {
+    if (normalizedURL in this.pages) {
+      this.pages[normalizedURL] += 1;
+      return false;
+    } else {
+      this.pages[normalizedURL] = 1;
+      return true;
+    }
+  }
+
+  private async getHTML(url: string): Promise<string> {
+    return await this.limit(async () => {
+      try {
+        const response: Response = await fetch(url, {
+          headers: {
+            "User-Agent": "BootCrawler/1.0",
+            Accept: "text/html",
+          },
+        });
+
+        if (response.status > 400) {
+          console.error(
+            `Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`,
+          );
+          return;
+        }
+
+        if (!response.headers.get("content-type")?.includes("text/html")) {
+          console.error(`Response from ${url} is not HTML!`);
+          return;
+        }
+
+        return response.text();
+      } catch (error) {
+        console.error(`Error while fetching from: ${url}: ${error}`);
+        return;
+      }
     });
+  }
 
-    if (response.status > 400) {
-      console.error(
-        `Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`,
-      );
+  private async crawlPage(currentURL: string): Promise<void> {
+    const baseURLNormalized = normalizeURL(this.baseURL);
+    const currentURLNormalized = normalizeURL(currentURL);
+
+    // check domain for current URL
+    // return if differebt than the base URL
+    if (!currentURLNormalized.startsWith(baseURLNormalized)) {
       return;
     }
 
-    if (!response.headers.get("content-type")?.includes("text/html")) {
-      console.error(`Response from ${url} is not HTML!`);
+    if (!this.addPageVisit(currentURLNormalized)) {
       return;
     }
 
-    return response.text();
-  } catch (error) {
-    console.error(`Error while fetching from: ${url}: ${error}`);
-    return;
-  }
-}
+    console.log(`Fetching from: ${currentURL}`);
 
-export async function crawlPage(
-  baseURL: string,
-  currentURL: string,
-  pages: Record<string, number> = {},
-) {
-  const baseURLNormalized = normalizeURL(baseURL);
-  const currentURLNormalized = normalizeURL(currentURL);
+    const html = await this.getHTML(currentURL);
+    if (!html) {
+      console.error(`!!! Couldn't fetch HTML from: ${currentURL}`);
+      return;
+    }
+    const urls = getURLsFromHTML(html, this.baseURL);
 
-  // check domain for current URL
-  // return if differebt than the base URL
-  if (!currentURLNormalized.startsWith(baseURLNormalized)) {
-    return pages;
+    const urlPromises = [];
+    for (let url of urls) {
+      urlPromises.push(this.crawlPage(url));
+    }
+
+    await Promise.all(urlPromises);
   }
 
-  if (currentURLNormalized in pages) {
-    pages[currentURLNormalized] += 1;
-    return pages;
-  } else {
-    pages[currentURLNormalized] = 1;
+  async crawl() {
+    await this.crawlPage(this.baseURL);
+    return this.pages;
   }
-
-  console.log(`Fetching from: ${currentURL}`);
-
-  const html = await getHTML(currentURL);
-  if (!html) {
-    console.error(`!!! Couldn't fetch HTML from: ${currentURL}`);
-    return pages;
-  }
-  const urls = getURLsFromHTML(html, baseURL);
-
-  // recursivelly fetch each URL found
-  for (let url of urls) {
-    pages = await crawlPage(baseURL, url, pages);
-  }
-
-  return pages;
 }
