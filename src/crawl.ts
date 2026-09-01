@@ -99,28 +99,28 @@ export function extractPageData(
 }
 
 export class ConcurrentCrawler {
-  baseURL: string;
-  pages: Record<string, number>;
-  limit: any;
+  #baseURL: string;
+  #pages: Record<string, number>;
+  #limit: any;
 
   constructor(baseURL: string, maxConcurrency: number) {
-    this.baseURL = baseURL;
-    this.pages = {};
-    this.limit = pLimit(maxConcurrency);
+    this.#baseURL = baseURL;
+    this.#pages = {};
+    this.#limit = pLimit(maxConcurrency);
   }
 
   private addPageVisit(normalizedURL: string): boolean {
-    if (normalizedURL in this.pages) {
-      this.pages[normalizedURL] += 1;
+    if (normalizedURL in this.#pages) {
+      this.#pages[normalizedURL] += 1;
       return false;
     } else {
-      this.pages[normalizedURL] = 1;
+      this.#pages[normalizedURL] = 1;
       return true;
     }
   }
 
   private async getHTML(url: string): Promise<string> {
-    return await this.limit(async () => {
+    return await this.#limit(async () => {
       try {
         const response: Response = await fetch(url, {
           headers: {
@@ -150,7 +150,7 @@ export class ConcurrentCrawler {
   }
 
   private async crawlPage(currentURL: string): Promise<void> {
-    const baseURLNormalized = normalizeURL(this.baseURL);
+    const baseURLNormalized = normalizeURL(this.#baseURL);
     const currentURLNormalized = normalizeURL(currentURL);
 
     // check domain for current URL
@@ -170,7 +170,7 @@ export class ConcurrentCrawler {
       console.error(`!!! Couldn't fetch HTML from: ${currentURL}`);
       return;
     }
-    const urls = getURLsFromHTML(html, this.baseURL);
+    const urls = getURLsFromHTML(html, this.#baseURL);
 
     const urlPromises = [];
     for (let url of urls) {
@@ -181,7 +181,7 @@ export class ConcurrentCrawler {
   }
 
   async crawl() {
-    await this.crawlPage(this.baseURL);
-    return this.pages;
+    await this.crawlPage(this.#baseURL);
+    return this.#pages;
   }
 }
