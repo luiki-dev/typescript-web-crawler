@@ -1,5 +1,6 @@
 import { argv, exit } from "process";
 import { ConcurrentCrawler, ExtractedPageData } from "./crawl";
+import { writeJSONReport } from "./report";
 
 const DEFAULT_MAX_CONCURRENCY = 3;
 const DEFAULT_MAX_PAGES = 25;
@@ -36,12 +37,7 @@ async function main() {
   console.log("=============================");
   console.log(`Crawled ${Object.keys(crawledPages).length} pages:`);
 
-  const firstPage = Object.values(crawledPages)[0];
-  if (firstPage) {
-    console.log(
-      `First page record: ${firstPage["url"]} - ${firstPage["heading"]}`,
-    );
-  }
+  writeJSONReport(crawledPages, "report.json");
 
   exit(0);
 }
