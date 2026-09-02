@@ -1,8 +1,8 @@
 import { argv, exit } from "process";
-import { ConcurrentCrawler } from "./crawl";
+import { ConcurrentCrawler, ExtractedPageData } from "./crawl";
 
-const MAX_CONCURRENCY = 3;
-const MAX_PAGES = 25;
+const DEFAULT_MAX_CONCURRENCY = 3;
+const DEFAULT_MAX_PAGES = 25;
 
 async function main() {
   const args: string[] = argv.slice(2);
@@ -18,16 +18,16 @@ async function main() {
   }
 
   const baseURL = args[0];
-  const maxConcurrency = args[1] ? Number(args[1]) : MAX_CONCURRENCY;
-  const maxPages = args[2] ? Number(args[2]) : MAX_PAGES;
+  const maxConcurrency = args[1] ? Number(args[1]) : DEFAULT_MAX_CONCURRENCY;
+  const maxPages = args[2] ? Number(args[2]) : DEFAULT_MAX_PAGES;
 
   console.log(`CRAWLING!`);
   console.log(`Max Concurency: ${maxConcurrency}`);
-  console.log(`Max Pages: ${maxPages}`)
+  console.log(`Max Pages: ${maxPages}`);
   console.log(`Base URL to be processed: ${baseURL}`);
   console.log("=============================");
 
-  const crawledPages: Record<string, number> = await crawlSiteAsync(
+  const crawledPages: Record<string, ExtractedPageData> = await crawlSiteAsync(
     baseURL,
     maxConcurrency,
     maxPages,
@@ -35,7 +35,13 @@ async function main() {
 
   console.log("=============================");
   console.log(`Crawled ${Object.keys(crawledPages).length} pages:`);
-  console.log(crawledPages);
+
+  const firstPage = Object.values(crawledPages)[0];
+  if (firstPage) {
+    console.log(
+      `First page record: ${firstPage["url"]} - ${firstPage["heading"]}`,
+    );
+  }
 
   exit(0);
 }

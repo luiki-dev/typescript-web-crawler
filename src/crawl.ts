@@ -100,39 +100,39 @@ export function extractPageData(
 
 export class ConcurrentCrawler {
   #baseURL: string;
-  #pages: Record<string, number>;
+  #pages: Record<string, ExtractedPageData>;
+  #visited: Set<string>;
   #limit: any;
   #maxPages: number;
   #shouldStop: boolean = false;
   #allTasks: Set<Promise<void>>;
 
-
   constructor(baseURL: string, maxConcurrency: number, maxPages: number) {
     this.#baseURL = baseURL;
     this.#pages = {};
+    this.#visited = new Set<string>();
     this.#limit = pLimit(maxConcurrency);
     this.#maxPages = maxPages;
     this.#allTasks = new Set<Promise<void>>();
   }
 
   private addPageVisit(normalizedURL: string): boolean {
-    if(this.#shouldStop) {
+    if (this.#shouldStop) {
       return false;
     }
 
-    if (Object.keys(this.#pages).length >= this.#maxPages) {
+    if (this.#visited.has(normalizedURL)) {
+      return false;
+    }
+
+    if (this.#visited.size >= this.#maxPages) {
       this.#shouldStop = true;
       console.log("Reached maximum number of pages to crawl.");
       return false;
     }
 
-    if (normalizedURL in this.#pages) {
-      this.#pages[normalizedURL] += 1;
-      return false;
-    } else {
-      this.#pages[normalizedURL] = 1;
-      return true;
-    }
+    this.#visited.add(normalizedURL);
+    return true;
   }
 
   private async getHTML(url: string): Promise<string> {
@@ -146,7 +146,9 @@ export class ConcurrentCrawler {
         });
 
         if (response.status > 400) {
-          throw new Error(`Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`);
+          throw new Error(
+            `Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`,
+          );
         }
 
         if (!response.headers.get("content-type")?.includes("text/html")) {
@@ -186,14 +188,17 @@ export class ConcurrentCrawler {
       console.error(`!!! Couldn't fetch HTML from: ${currentURL}`);
       return;
     }
-    const urls = getURLsFromHTML(html, this.#baseURL);
+    const data = extractPageData(html, currentURL);
+    this.#pages[currentURLNormalized] = data;
 
     const urlPromises = [];
-    for (let url of urls) {
+    for (let url of data.outgoingLinks) {
       let task: Promise<void> = this.crawlPage(url);
       this.#allTasks.add(task);
       urlPromises.push(task);
-      task.finally(() => {this.#allTasks.delete(task)});
+      task.finally(() => {
+        this.#allTasks.delete(task);
+      });
     }
 
     await Promise.all(urlPromises);
