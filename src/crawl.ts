@@ -130,20 +130,16 @@ export class ConcurrentCrawler {
         });
 
         if (response.status > 400) {
-          console.error(
-            `Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`,
-          );
-          return;
+          throw new Error(`Response error fetching from: ${url}: ${response.status}: ${response.statusText}!`);
         }
 
         if (!response.headers.get("content-type")?.includes("text/html")) {
-          console.error(`Response from ${url} is not HTML!`);
-          return;
+          throw new Error(`Response from ${url} is not HTML!`);
         }
 
         return response.text();
       } catch (error) {
-        console.error(`Error while fetching from: ${url}: ${error}`);
+        console.error(`Error while fetching HTML: ${error}`);
         return;
       }
     });
